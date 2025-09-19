@@ -1,74 +1,114 @@
-
 use statrs::distribution::{StudentsT, ContinuousCDF};
+use std::collections::BTreeMap;
 
+
+//     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
+
+//     [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1]
 fn main() {
 
-    let pre_test= vec![4, 4, 4, 4, 4];
-    let post_test = vec![7, 6, 5, 8, 9];
-    
-    let session = KirkpatrickModel::new(pre_test, post_test);
+    let mut pre_test_data = BTreeMap::new();
+    pre_test_data.insert("user_1".to_string(), vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]);
+    pre_test_data.insert("user_2".to_string(), vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]);
 
-    println!("avg {:?}", session.mean_diff());
+    
+    let mut post_test_data = BTreeMap::new();
+    post_test_data.insert("user_1".to_string(), vec![0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1]);
+    post_test_data.insert("user_2".to_string(), vec![0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0]);
+
+    
+   let session = KirkpatrickModel::new(pre_test_data, post_test_data);
+
+    // println!("avg {:?}", session.p_value());
+    // println!("avg {:?}", session.p_value());
+    // println!("avg {:?}", session.p_value());
+
+    println!("{:?}", session.mean_diff());
+
 }
 
 
 // ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== 
 
+
+
 struct KirkpatrickModel {
-    pre_test_data: Vec<f64>,
-    post_test_data: Vec<f64>,
+    pre_test_data: BTreeMap<String, Vec<f64>>,
+    post_test_data: BTreeMap<String, Vec<f64>>,
 }
 
 
 impl KirkpatrickModel {
 
-        // Constructor
-        fn new<T, U>(pre_test_data: Vec<T>, post_test_data: Vec<U>) -> Self 
-        where 
-            T: Into<f64> + Clone,
-            U: Into<f64> + Clone,
+        // fn test(&self) 
+        // }
+    
+    // Constructor
+        fn new(pre_test_data: BTreeMap<String, Vec<i32>>, post_test_data: BTreeMap<String, Vec<i32>>) -> Self {
 
-        {
-            let pre_test_data = pre_test_data.into_iter().map(|val| val.into()).collect();
-            let post_test_data = post_test_data.into_iter().map(|val| val.into()).collect();
-
+            //            let pre_test_data = pre_test_data.into_iter().map(|val| val.into()).collect();
+            
+            
+            let pre_test_data = pre_test_data
+            .into_iter()
+            .map(|(key, values)| {
+                let float_values: Vec<f64> = values
+                .into_iter()
+                .map(|x| x as f64)
+                .collect();
+                (key,float_values)
+            })
+            .collect();
+            
+            
+            let post_test_data = post_test_data
+            .into_iter()
+            .map(|(key, values)| {
+                let float_values: Vec<f64> = values
+                .into_iter()
+                .map(|x| x as f64)
+                .collect();
+                (key,float_values)
+            })
+            .collect();
+            
             Self { pre_test_data, post_test_data }
         }
-    
-
-        // Method
-        fn p_value(&self) -> f64 {
-
-            let n_of_users = self.pre_test_data.len();
-            let t_stat = self.t_stat();
-    
-            let df = (n_of_users - 1) as f64;
-            let t_disc = StudentsT::new(0.0, 1.0, df).unwrap();
-    
-            let cdf_val = t_disc.cdf(t_stat.abs());
-    
-            return 2.0 * (1.0 - cdf_val)
-        }
-
         
-        // Method
-        fn t_stat(&self) -> f64 {
-
-            let mean_diff = self.mean_diff();
-            let std_diff = self.std_diff();
-            let n_of_users = self.pre_test_data.len();
-    
-            let t_stat = mean_diff / (std_diff/(n_of_users as f64).sqrt());
-            return t_stat
-        }    
         
-
-        // Method
-        fn std_diff(&self) -> f64 {
+        // // Method
+        // fn p_value(&self) -> f64 {
             
+        //     let n_of_users = self.pre_test_data.len();
+        //     let t_stat = self.t_stat();
+    
+        //     let df = (n_of_users - 1) as f64;
+        //     let t_disc = StudentsT::new(0.0, 1.0, df).unwrap();
+    
+        //     let cdf_val = t_disc.cdf(t_stat.abs());
+    
+        //     return 2.0 * (1.0 - cdf_val)
+        // }
 
-            let mean_diff_vector = self.mean_diff();
-            let diff_vector = self.score_diff();
+        
+        // // Method
+        // fn t_stat(&self) -> f64 {
+
+        //     let mean_diff = self.mean_diff();
+        //     let std_diff = self.std_diff();
+        //     let n_of_users = self.pre_test_data.len();
+    
+        //     let t_stat = mean_diff / (std_diff/(n_of_users as f64).sqrt());
+        //     return t_stat
+        // }    
+        
+
+        // // Method
+        fn std_diff(&self) -> Vec<f64> {
+            
+            let mean_diffs = self.mean_diff();
+            let diff_vectors = self.score_diff();
+
             let mut sum: f64 = 0.0;
             
             for diff in &diff_vector {
@@ -80,29 +120,39 @@ impl KirkpatrickModel {
         }
         
 
-        // Method
-        fn mean_diff(&self) -> f64 {
+        // // Method
+        fn mean_diff(&self) -> Vec<f64> {
 
-            let avg_vector = self.score_diff();
-            let sum: f64 = avg_vector.iter().sum();
-            let avg = sum/avg_vector.len() as f64;
-            
-            return avg
+            let avg_vectors = self.score_diff();
+            let mut averages = vec![];
+
+            for i in 0..avg_vectors.len() {
+                
+                let sum: f64 = avg_vectors[i].iter().sum();
+                let avg = sum/avg_vectors[i].len() as f64;
+
+                averages.push(avg);
+
+            }
+            averages
         }
         
 
-        // Method
-        fn score_diff(&self) -> Vec<f64>{
-    
-            let mut i = 0;
-            let mut diff_vector: Vec<f64> = Vec::new();
-    
-            while i <self.pre_test_data.len(){
-                let diff = self.post_test_data[i] - self.pre_test_data[i];
-                diff_vector.push(diff);
-                i += 1;
-    
+        // // Method
+        fn score_diff(&self) -> Vec<Vec<f64>> {
+
+            let mut diff_vectors = vec![];
+
+            for key in self.pre_test_data.keys() {
+                let mut diff = vec![];
+
+                for i in 0..(&self.pre_test_data[key]).len() {
+                    diff.push(self.post_test_data[key][i] - self.pre_test_data[key][i]);    
+                
+                }
+                diff_vectors.push(diff)
+
             }
-            return diff_vector
-        }
-}    
+            return diff_vectors
+        }    
+}
