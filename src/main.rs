@@ -9,12 +9,12 @@ fn main() {
     pre_test_data.insert("user_1".to_string(), vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]);
     pre_test_data.insert("user_2".to_string(), vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]);
 
-    
+
     let mut post_test_data = BTreeMap::new();
     post_test_data.insert("user_1".to_string(), vec![0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1]);
     post_test_data.insert("user_2".to_string(), vec![0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0]);
 
-    
+
    let session = KirkpatrickModel::new(pre_test_data, post_test_data);
 
 
@@ -23,7 +23,7 @@ fn main() {
 }
 
 
-// ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== 
+// ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== ==== ===== ==== =====
 
 
 
@@ -63,7 +63,8 @@ impl KirkpatrickModel {
             
             Self { pre_test_data, post_test_data }
         }
-        
+
+
         // Methods
         fn p_value(&self) -> Vec<f64>{
 
@@ -71,6 +72,7 @@ impl KirkpatrickModel {
             let mut all_p_values = vec![];
             let n_of_questions = self.pre_test_data.values().next().unwrap().len(); // acces len of nested vector
             let df = (n_of_questions - 1) as f64;
+
             let t_disc = StudentsT::new(0.0, 1.0, df).unwrap();
 
             for i in 0..t_stat.len() {
@@ -81,7 +83,6 @@ impl KirkpatrickModel {
         }
 
 
-        
         // // Method
         fn t_stat(&self) -> Vec<f64>{
 
@@ -99,7 +100,7 @@ impl KirkpatrickModel {
             return all_t_stats
 
         }
-        
+
 
         // // Method
         fn std_diff(&self) -> Vec<f64> {
@@ -121,8 +122,9 @@ impl KirkpatrickModel {
             }
 
             return all_stds
-    }
-        
+        }
+
+
         // // Method
         fn mean_diff(&self) -> Vec<f64>{
 
@@ -130,7 +132,7 @@ impl KirkpatrickModel {
             let mut averages = vec![];
 
             for i in 0..avg_vectors.len() {
-                
+
                 let sum: f64 = avg_vectors[i].iter().sum();
                 let avg = sum/avg_vectors[i].len() as f64;
 
@@ -139,7 +141,7 @@ impl KirkpatrickModel {
             }
             return averages
         }
-        
+
 
         // // Method
         fn score_diff(&self) -> Vec<Vec<f64>> {
