@@ -79,8 +79,8 @@ impl KirkpatrickModel {
 
             let t_stat = self.t_stat();
             let mut all_p_values = vec![];
-            let n_of_users = self.pre_test_data.len();
-            let df = (n_of_users - 1) as f64;
+            let n_of_questions = self.pre_test_data.values().next().unwrap().len();
+            let df = (n_of_questions - 1) as f64;
             let t_disc = StudentsT::new(0.0, 1.0, df).unwrap();
 
             for i in 0..t_stat.len() {
@@ -97,13 +97,13 @@ impl KirkpatrickModel {
 
             let mean_diff = self.mean_diff();
             let std_diff = self.std_diff();
-            let n_of_users = self.pre_test_data.len();
+            let n_of_questions = self.pre_test_data.values().next().unwrap().len();
 
             let mut all_t_stats = vec![];
 
             for i in 0..mean_diff.len(){
 
-                let t_stat = mean_diff[i] / (std_diff[i]/(n_of_users as f64).sqrt());
+                let t_stat = mean_diff[i] / (std_diff[i]/(n_of_questions as f64).sqrt());
                 
                 all_t_stats.push(t_stat);
             }
@@ -170,3 +170,4 @@ impl KirkpatrickModel {
             return diff_vectors
         }    
 }
+
