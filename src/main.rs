@@ -4,22 +4,24 @@ use std::collections::BTreeMap;
 
 
 fn main() {
-
     let mut pre_test_data = BTreeMap::new();
     pre_test_data.insert("user_1".to_string(), vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]);
     pre_test_data.insert("user_2".to_string(), vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]);
 
-    
     let mut post_test_data = BTreeMap::new();
     post_test_data.insert("user_1".to_string(), vec![0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1]);
     post_test_data.insert("user_2".to_string(), vec![0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0]);
 
-    
-   let session = KirkpatrickModel::new(pre_test_data, post_test_data);
+    let session = KirkpatrickModel::new(pre_test_data, post_test_data);
 
-
-    println!("{:?}", session.t_stat());
-
+    match session.summary() {
+        Ok(summary) => {
+            println!("{:#?}", summary);
+        }
+        Err(e) => {
+            eprintln!("Failed to compute stats: {}", e);
+        }
+    }
 }
 
 
@@ -32,6 +34,17 @@ struct KirkpatrickModel {
     post_test_data: BTreeMap<String, Vec<f64>>,
 }
 
+#[derive(Debug)]
+struct SessionSummary {
+    n_users: usize,
+    mean_improvement: f64,
+    std_improvement: f64,
+    t_stat: f64,
+    p_value: f64,
+    cohens_d: f64,
+    significant_05: bool,
+    significant_01: bool,
+}
 
 impl KirkpatrickModel {
 
@@ -65,7 +78,7 @@ impl KirkpatrickModel {
         }
 
 
-    //     // Methods
+         // Methods
         fn p_value(&self) -> f64 {
 
             let n_of_users = self.pre_test_data.len();
@@ -91,12 +104,20 @@ impl KirkpatrickModel {
             return t_stat
         }            
 
+        fn cohens_d(&self) -> f64 {
+
+            let mean_diff = self.mean_diff();
+            let std_diff = self.std_diff();
+
+            return mean_diff / std_diff  // standardized effect size
+        }
+
 
         //     // // Method
         fn std_diff(&self) -> f64 {
             
+            let diff_vector = self.total_score_differences(); // Vec<f64> with one difference per user
             let mean_diff = self.mean_diff(); 
-            let diff_vector = self.score_diff(); // Vec<f64> with one difference per user
             
             let mut sum: f64 = 0.0;
             for diff in &diff_vector {
@@ -111,21 +132,14 @@ impl KirkpatrickModel {
         // // Method
         fn mean_diff(&self) -> f64{
 
-            let avg_vectors = self.score_diff();
-            let mut averages = 0.0;
-
-            for i in 0..avg_vectors.len() {
-                
-                let sum: f64 = avg_vectors[i];
-                averages += sum/avg_vectors.len() as f64;
-
-            }
-            return averages
+            let avg_vectors = self.total_score_differences();
+            
+            return avg_vectors.iter().sum::<f64>() / avg_vectors.len() as f64
         }
         
 
         // // Method
-        fn score_diff(&self) -> Vec<f64> {
+        fn total_score_differences(&self) -> Vec<f64> {
 
             let mut diff_vectors = vec![];
 
@@ -141,5 +155,28 @@ impl KirkpatrickModel {
             }
             return diff_vectors
         }    
+
+        fn summary(&self) -> Result<SessionSummary, String> {
+            let n = self.pre_test_data.len();
+            let mean_diff = self.mean_diff();
+            let std_diff = self.std_diff();
+            let t_stat = self.t_stat();
+            let p_val = self.p_value();
+            let d = self.cohens_d();
+
+            Ok(SessionSummary {
+                n_users: n,
+                mean_improvement: mean_diff,
+                std_improvement: std_diff,
+                t_stat,
+                p_value: p_val,
+                cohens_d: d,
+                significant_05: p_val < 0.05,
+                significant_01: p_val < 0.01,
+            })
+        }
+
+
+
 }
 
