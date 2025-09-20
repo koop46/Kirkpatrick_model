@@ -2,9 +2,7 @@ use statrs::distribution::{StudentsT, ContinuousCDF};
 use std::collections::BTreeMap;
 
 
-//     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
 
-//     [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1]
 fn main() {
 
     let mut pre_test_data = BTreeMap::new();
@@ -19,9 +17,6 @@ fn main() {
     
    let session = KirkpatrickModel::new(pre_test_data, post_test_data);
 
-    // println!("avg {:?}", session.p_value());
-    // println!("avg {:?}", session.p_value());
-    // println!("avg {:?}", session.p_value());
 
     println!("{:?}", session.p_value());
 
