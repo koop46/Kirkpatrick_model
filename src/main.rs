@@ -78,7 +78,6 @@ impl KirkpatrickModel {
         }
 
 
-         // Methods
         fn p_value(&self) -> f64 {
 
             let n_of_users = self.pre_test_data.len();
@@ -93,7 +92,6 @@ impl KirkpatrickModel {
         }
 
 
-         // Method
         fn t_stat(&self) -> f64 {
 
             let mean_diff = self.mean_diff();
@@ -113,10 +111,9 @@ impl KirkpatrickModel {
         }
 
 
-        //     // // Method
         fn std_diff(&self) -> f64 {
             
-            let diff_vector = self.total_score_differences(); // Vec<f64> with one difference per user
+            let diff_vector = self.total_score_differences(); 
             let mean_diff = self.mean_diff(); 
             
             let mut sum: f64 = 0.0;
@@ -129,7 +126,6 @@ impl KirkpatrickModel {
         }
         
 
-        // // Method
         fn mean_diff(&self) -> f64{
 
             let avg_vectors = self.total_score_differences();
@@ -138,7 +134,6 @@ impl KirkpatrickModel {
         }
         
 
-        // // Method
         fn total_score_differences(&self) -> Vec<f64> {
 
             let mut diff_vectors = vec![];
