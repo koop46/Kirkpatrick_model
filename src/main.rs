@@ -35,14 +35,8 @@ struct KirkpatrickModel {
 
 impl KirkpatrickModel {
 
-        // fn test(&self) 
-        // }
-    
     // Constructor
-        fn new(pre_test_data: BTreeMap<String, Vec<i32>>, post_test_data: BTreeMap<String, Vec<i32>>) -> Self {
-
-            //            let pre_test_data = pre_test_data.into_iter().map(|val| val.into()).collect();
-            
+        fn new(pre_test_data: BTreeMap<String, Vec<i32>>, post_test_data: BTreeMap<String, Vec<i32>>) -> Self {            
             
             let pre_test_data = pre_test_data
             .into_iter()
@@ -70,11 +64,12 @@ impl KirkpatrickModel {
             Self { pre_test_data, post_test_data }
         }
         
+        // Methods
         fn p_value(&self) -> Vec<f64>{
 
             let t_stat = self.t_stat();
             let mut all_p_values = vec![];
-            let n_of_questions = self.pre_test_data.values().next().unwrap().len();
+            let n_of_questions = self.pre_test_data.values().next().unwrap().len(); // acces len of nested vector
             let df = (n_of_questions - 1) as f64;
             let t_disc = StudentsT::new(0.0, 1.0, df).unwrap();
 
@@ -96,11 +91,10 @@ impl KirkpatrickModel {
 
             let mut all_t_stats = vec![];
 
-            for i in 0..mean_diff.len(){
-
-                let t_stat = mean_diff[i] / (std_diff[i]/(n_of_questions as f64).sqrt());
-                
-                all_t_stats.push(t_stat);
+            for i in 0..mean_diff.len() {
+                    let se = std_diff[i] / (n_of_questions as f64).sqrt();
+                    let t_stat = mean_diff[i] / se;
+                    all_t_stats.push(t_stat);
             }
             return all_t_stats
 
